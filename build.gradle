@@ -1,14 +1,18 @@
+import java.nio.file.Paths
+
 plugins {
-	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+  id 'fabric-loom' version '0.12-SNAPSHOT'
+  // id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
 	id 'maven-publish'
 }
 
 version = project.mod_version
 group = project.maven_group
 
-base {
-	archivesName = project.archives_base_name
-}
+// base {
+//	archivesName = project.archives_base_name
+//}
+archivesBaseName = project.archives_base_name
 
 repositories {
 	// Add repositories to retrieve artifacts from in here.
@@ -19,12 +23,23 @@ repositories {
 }
 
 loom {
-	splitEnvironmentSourceSets()
+  // comment below line when using older MC versions (e.g. 1.16.1)
+	// splitEnvironmentSourceSets()
+
+  runs {
+    client {
+      // runDir file("/Users/nathaniel/Library/Application Support/ModrinthApp/profiles/SpeedrunPack (1)")
+      runDir Paths.get(System.getProperty("user.home"), "Library/Application Support/ModrinthApp/profiles/SpeedrunPack (1)").toString()
+    }
+    server {
+      runDir "run/server"
+    }
+  }
 
 	mods {
 		"modid" {
 			sourceSet sourceSets.main
-			sourceSet sourceSets.client
+			// sourceSet sourceSets.client
 		}
 	}
 
@@ -33,12 +48,27 @@ loom {
 dependencies {
 	// To change the versions see the gradle.properties file
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
-	mappings loom.officialMojangMappings()
+	// mappings loom.officialMojangMappings()
 	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+  mappings "net.fabricmc:yarn:1.16.1+build.21:v2"
 
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-	
+
+  fileTree(dir: "/Users/nathaniel/Library/Application Support/ModrinthApp/profiles/SpeedrunPack (1)/mods", include: "*.jar").each { modFile ->
+    modRuntimeOnly(files(modFile))
+  }
+
+  // WebSocket library
+  implementation "org.java-websocket:Java-WebSocket:1.5.3"
+  include "org.java-websocket:Java-WebSocket:1.5.3"
+
+  // MixinExtras is required by many 1.16.1 speedrun mods (StandardSettings, etc.)
+  implementation "io.github.llamalad7:mixinextras-fabric:0.3.5"
+  include "io.github.llamalad7:mixinextras-fabric:0.3.5"
+
+  // Annotation processor for MixinExtras
+  annotationProcessor "io.github.llamalad7:mixinextras-fabric:0.3.5"
 }
 
 processResources {
@@ -50,7 +80,7 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-	it.options.release = 21
+	it.options.release = 8
 }
 
 java {
@@ -59,12 +89,12 @@ java {
 	// If you remove this line, sources will not be generated.
 	withSourcesJar()
 
-	sourceCompatibility = JavaVersion.VERSION_21
-	targetCompatibility = JavaVersion.VERSION_21
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
 }
 
 jar {
-	inputs.property "archivesName", project.base.archivesName
+	inputs.property "archivesName", project.archives_base_name
 
 	from("LICENSE") {
 		rename { "${it}_${inputs.properties.archivesName}"}

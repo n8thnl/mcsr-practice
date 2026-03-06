@@ -1,8 +1,8 @@
 {
 	"schemaVersion": 1,
-	"id": "modid",
+	"id": "mcsr_practice",
 	"version": "${version}",
-	"name": "Example mod",
+	"name": "MCSR Practice",
 	"description": "This is an example description! Tell everyone what your mod is about!",
 	"authors": [
 		"Me!"
@@ -16,24 +16,17 @@
 	"environment": "*",
 	"entrypoints": {
 		"main": [
-			"com.example.ExampleMod"
-		],
-		"client": [
-			"com.example.ExampleModClient"
+			"com.n8thnl.mcsr_practice.MCSRPractice"
 		]
 	},
 	"mixins": [
-		"modid.mixins.json",
-		{
-			"config": "modid.client.mixins.json",
-			"environment": "client"
-		}
+		"mcsr_practice.mixins.json"
 	],
 	"depends": {
-		"fabricloader": ">=0.18.2",
-		"minecraft": "~1.21.11",
-		"java": ">=21",
-		"fabric-api": "*"
+		"fabricloader": ">=0.14.22",
+		"minecraft": "1.16.1",
+		"java": ">=8",
+		"fabric": "*"
 	},
 	"suggests": {
 		"another-mod": "*"
