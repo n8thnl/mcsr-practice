@@ -38,3 +38,10 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
+
+# lib jars
+libs/*.jar
+
+# local development worlds are created in system path under project root
+/Users
+/home

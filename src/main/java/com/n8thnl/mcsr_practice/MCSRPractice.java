@@ -1,7 +1,6 @@
 package com.n8thnl.mcsr_practice;
 
 import net.fabricmc.api.ModInitializer;
-
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -13,7 +12,9 @@ public class MCSRPractice implements ModInitializer {
 	// That way, it's clear which mod wrote info, warnings, and errors.
 	public static final Logger LOGGER = LogManager.getLogger(MOD_ID);
 
-    private SpeedrunSocketServer server;
+    public static SpeedrunSocketServer globalServer;
+
+    public static boolean shouldTeleportToStronghold = false;
 
 	@Override
 	public void onInitialize() {
@@ -23,21 +24,10 @@ public class MCSRPractice implements ModInitializer {
 
 		LOGGER.info("Hello Fabric world!");
 
-        // This event fires when the integrated server (singleplayer) starts
-        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STARTED.register(clientServer -> {
-            server = new SpeedrunSocketServer(8887, clientServer);
-            server.start();
-        });
+        globalServer = new SpeedrunSocketServer(8887);
+        new Thread(globalServer).start();
 
-        // Clean up when the world closes
-        net.fabricmc.fabric.api.event.lifecycle.v1.ServerLifecycleEvents.SERVER_STOPPING.register(clientServer -> {
-            if (server != null) {
-                try {
-                    server.stop();
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-            }
-        });
+        AdminServer admin = new AdminServer();
+        admin.start();
 	}
 }

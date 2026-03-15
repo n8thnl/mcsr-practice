@@ -3,7 +3,8 @@
 	"package": "com.n8thnl.mcsr_practice.mixin",
 	"compatibilityLevel": "JAVA_8",
 	"mixins": [
-		"MCSRPracticeMixin"
+		"MCSRPracticeMixin",
+    "PlayerJoinMixin"
 	],
 	"injectors": {
 		"defaultRequire": 1

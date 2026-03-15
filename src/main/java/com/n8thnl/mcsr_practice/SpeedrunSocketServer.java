@@ -2,6 +2,7 @@ package com.n8thnl.mcsr_practice;
 
 import java.net.InetSocketAddress;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ChunkTicketType;
 import net.minecraft.server.world.ServerWorld;
@@ -18,11 +19,8 @@ import org.java_websocket.server.WebSocketServer;
 
 public class SpeedrunSocketServer extends WebSocketServer {
 
-    private final MinecraftServer mcServer;
-
-    public SpeedrunSocketServer(int port, MinecraftServer mcServer) {
+    public SpeedrunSocketServer(int port) {
         super(new InetSocketAddress(port));
-        this.mcServer = mcServer;
     }
 
     @Override
@@ -34,23 +32,41 @@ public class SpeedrunSocketServer extends WebSocketServer {
     public void onMessage(WebSocket conn, String message) {
         if (message.equalsIgnoreCase("tpsr:stronghold")) {
             // We must execute on the main server thread to avoid crashes
-            mcServer.execute(() -> {
-                ServerPlayerEntity player = mcServer
-                    .getPlayerManager()
-                    .getPlayerList()
-                    .get(0);
-                if (player != null) {
-                    ServerWorld world = player.getServerWorld();
-                    BlockPos structurePos = Stronghold.getPos(player, world);
-                    BlockPos starterStaircasePos = Stronghold.getStarterStaircasePos(world, structurePos);
+            MinecraftClient client = MinecraftClient.getInstance();
+            MinecraftServer mcServer = client.getServer();
 
-                    if (starterStaircasePos != null) {
-                        TeleportHelper.goToPos(starterStaircasePos, mcServer);
+            if (mcServer != null) {
+                mcServer.execute(() -> {
+                    ServerPlayerEntity player = mcServer
+                        .getPlayerManager()
+                        .getPlayerList()
+                        .get(0);
+                    if (player != null) {
+                        ServerWorld world = player.getServerWorld();
+                        BlockPos structurePos = Stronghold.getPos(player, world);
+                        BlockPos starterStaircasePos = Stronghold.getStarterStaircasePos(world, structurePos);
 
-                        conn.send(
-                            "Teleport successful to structure piece index 0."
-                        );
+                        if (starterStaircasePos != null) {
+                            TeleportHelper.goToPos(starterStaircasePos, mcServer);
+
+                            conn.send(
+                                "Teleport successful to structure piece index 0."
+                            );
+                        }
                     }
+                });
+            }
+        }
+
+        if (message.equalsIgnoreCase("tpsr:reset:stronghold")) {
+
+            MCSRPractice.shouldTeleportToStronghold = true;
+
+            MinecraftClient.getInstance().execute(() -> {
+                try {
+                    me.voidxwalker.autoreset.Atum.scheduleReset();
+                } catch (Exception e) {
+                    conn.send("Error: Could not call Atum. Is it installed?");
                 }
             });
         }
